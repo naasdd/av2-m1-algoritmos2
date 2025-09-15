@@ -7,6 +7,29 @@
 #include "./include/dateNow.h"
 using namespace std;
 
+struct Date{
+    int month, day , year;
+};
+
+
+struct Product
+{
+    string productName;
+    float amountProduct;
+    float productPrice;
+};
+
+std::string dateNow()
+{
+    time_t timestamp = time(NULL);
+    tm *data = localtime(&timestamp);
+
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", data);
+
+    return std::string(buffer);
+}
+
 int main()
 {
 
