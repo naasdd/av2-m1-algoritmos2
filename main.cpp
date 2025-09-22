@@ -25,13 +25,10 @@ Product productArray[20];
 
 string dateNow()
 {
-    time_t timestamp = time(NULL);
-    tm *data = localtime(&timestamp);
+    time_t atualTime = time(0); // pega a hora atual
+    tm *now = localtime(&atualTime); // converte para o fuso local com a divisão de horas, minutos e segundos
 
-    char buffer[80];
-    strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", data);
-
-    return string(buffer);
+    return to_string((now->tm_year + 1900)) + '-' + to_string((now->tm_mon + 1)) + '-' + to_string(now->tm_mday);
 }
 
 void createProduct()
