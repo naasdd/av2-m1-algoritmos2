@@ -49,11 +49,11 @@ void createProduct()
     ofstream dataBaseTXT;
     dataBaseTXT.open("./database.txt");
     dataBaseTXT << temp.productName << "," << temp.amountProduct << "," << temp.productPrice << endl;
-    dataBaseTXT.close()
+    dataBaseTXT.close();
 }
 
-void readDataBase() {
-
+void readDataBase()
+{
 }
 
 void registerProduct()
@@ -65,72 +65,76 @@ void sellProduct()
     // A fazer
 }
 
-void mainMenu()
+void sellMenu()
 {
-    cout << "--- Menu ---\n";
-    cout << "  - Menu principal:\n";
-    cout << "    - [1] Cadastrar produto\n";
-    cout << "    - [2] Vender produto\n";
-    cout << "    - [0] Voltar\n";
-    cout << "  - Menu de pagamento ao finalizar venda.\n";
-
-    cout << "\nEscolha uma opção: ";
     int option;
-    cin >> option;
-
-    switch (option)
+    do
     {
-    case 1:
-        void registerProduct();
-        break;
-    case 2:
-        void sellProduct();
-        break;
-    case 0:
-        void menu();
-        break;
-    default:
-        break;
-    }
+
+        cout << "\n\n--- Menu de venda ---\n";
+        cout << "    - [1] Formas de Pagamento \n";
+        cout << "    - [2] Datas de Parcelas \n";
+        cout << "    - [0] Voltar\n";
+
+        cout << "\nEscolha uma opção: ";
+
+        cin >> option;
+
+        switch (option)
+        {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 0:
+            break;
+        default:
+            cout << "Opção inválida!\n";
+            break;
+        }
+    } while (option != 0);
 }
 
-void menu()
+void mainMenu()
 {
-
     cout << dateNow();
 
-    cout << "--- Menu ---\n";
-    cout << "    - [1] Menu principal\n";
-    cout << "    - [2] Formas de Pagamento \n";
-    cout << "    - [3] Datas de Parcelas \n";
-    cout << "    - [0] Sair\n";
-    cout << "  - Menu de pagamento ao finalizar venda.\n";
-
-    cout << "\nEscolha uma opção: ";
     int option;
-    cin >> option;
-
-    switch (option)
+    do
     {
-    case 1:
-        void registerProduct();
-        break;
-    case 2:
-        void sellProduct();
-        break;
-    case 0:
-        return;
-        break;
-    default:
-        break;
-    }
+
+        cout << "\n\n--- Menu ---\n";
+        cout << "  - Menu principal:\n";
+        cout << "    - [1] Cadastrar produto\n";
+        cout << "    - [2] Vender produto\n";
+        cout << "    - [0] Sair\n";
+
+        cout << "\nEscolha uma opção: ";
+        cin >> option;
+
+        switch (option)
+        {
+        case 1:
+            registerProduct();
+            break;
+        case 2:
+            sellMenu();
+            break;
+        case 0:
+            cout << "\nEncerrando sessão...\n";
+            break;
+        default:
+            cout << "Opção inválida!\n";
+            break;
+        }
+    } while (option != 0);
 }
 
 int main()
 {
     system("chcp 65001");
 
-    menu();
+    mainMenu();
 
     return 0;
 }
