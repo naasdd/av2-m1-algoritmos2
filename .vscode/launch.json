@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/José/Documents/Github/av2-m1-algoritmos2",
-      "program": "c:/Users/José/Documents/Github/av2-m1-algoritmos2/build/Debug/outDebug",
+      "cwd": "c:/Users/joseg/Documents/GitHub/av2-m1-algoritmos2",
+      "program": "c:/Users/joseg/Documents/GitHub/av2-m1-algoritmos2/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

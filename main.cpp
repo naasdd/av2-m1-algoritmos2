@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -19,6 +20,8 @@ struct Product
     float amountProduct;
     float productPrice;
 };
+
+Product productArray[20];
 
 string dateNow()
 {
@@ -52,12 +55,37 @@ void createProduct()
     dataBaseTXT.close();
 }
 
-void readDataBase()
+Product readDataBase()
 {
-}
+    ifstream dataBaseTXT("./database.txt");
+    string line;
+    Product temp;
 
-void registerProduct()
-{
+    int i = 0;
+
+    cout << "\n[DEBBUG] Iniciando leitura de arquivo txt\n";
+    while (getline(dataBaseTXT, line))
+    {
+        string nameSTR, quantitySTR, priceSTR;
+        stringstream ss(line);
+
+        getline(ss, nameSTR, ',');
+        getline(ss, quantitySTR, ',');
+        getline(ss, priceSTR, ',');
+
+        temp.productName = nameSTR;
+        temp.amountProduct = stof(quantitySTR);
+        temp.productPrice = stof(priceSTR);
+
+        cout << temp.productName << " ";
+        cout << temp.amountProduct << " ";
+        cout << temp.productPrice << "\n";
+
+        productArray[i] = temp;
+        i += 1;
+    }
+
+    cout << "\n[DEBBUG] Finalizado leitura de arquivo txt\n";
 }
 
 void sellProduct()
@@ -115,7 +143,7 @@ void mainMenu()
         switch (option)
         {
         case 1:
-            registerProduct();
+            createProduct();
             break;
         case 2:
             sellMenu();
@@ -133,6 +161,8 @@ void mainMenu()
 int main()
 {
     system("chcp 65001");
+
+    readDataBase();
 
     mainMenu();
 

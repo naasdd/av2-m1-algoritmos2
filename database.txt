@@ -1,0 +1,4 @@
+boi,4,32
+lesma,10,2
+boi,4,32
+bosta,7,1
