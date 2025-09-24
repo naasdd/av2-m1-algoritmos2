@@ -38,10 +38,7 @@
   "C_Cpp_Runner.compilerArgs": [],
   "C_Cpp_Runner.linkerArgs": [],
   "C_Cpp_Runner.includePaths": [],
-  "C_Cpp_Runner.includeSearch": [
-    "*",
-    "**/*"
-  ],
+  "C_Cpp_Runner.includeSearch": ["*", "**/*"],
   "C_Cpp_Runner.excludeSearch": [
     "**/build",
     "**/build/**",
@@ -61,6 +58,7 @@
     "iosfwd": "cpp",
     "iostream": "cpp",
     "text_encoding": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "xstring": "cpp"
   }
 }
