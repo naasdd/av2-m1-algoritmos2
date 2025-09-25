@@ -27,18 +27,29 @@ Product productArray[20];
 int lerNumero()
 {
     int numero;
-    // FAZER A LÓGICA DE VALIDAÇÃO DE DADO DIGITADO PELO USUÁRIO
-    cin >> numero;
+    while (!(cin >> numero))
+    {
+        cin.clear(); // limpa erro
+        cin.ignore(1000, '\n'); // descarta entrada inválida
+        cout << "Valor inválido! Digite um número inteiro: ";
+    }
+    cin.ignore(1000, '\n'); // limpa resto da linha
     return numero;
 }
 
 float lerDecimal()
 {
     float numero;
-    // FAZER A LÓGICA DE VALIDAÇÃO DE DADO DIGITADO PELO USUÁRIO
-    cin >> numero;
+    while (!(cin >> numero))
+    {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        cout << "Valor inválido! Digite um número decimal: ";
+    }
+    cin.ignore(1000, '\n');
     return numero;
 }
+
 
 string getCurrentDate()
 {
@@ -66,10 +77,10 @@ void createProduct()
     cin >> temp.productName;
 
     cout << "Quantidade: ";
-    cin >> temp.amountProduct;
+    temp.amountProduct = lerDecimal();
 
     cout << "Valor de venda";
-    cin >> temp.productPrice;
+    temp.productPrice = lerDecimal();
 
     // FAZER A LÓGICA DE VERIFICAR SE JÁ EXISTE O PRODUTO
 
