@@ -79,7 +79,7 @@ void createProduct()
     cout << "Quantidade: ";
     temp.amountProduct = lerDecimal();
 
-    cout << "Valor de venda";
+    cout << "Valor de venda: ";
     temp.productPrice = lerDecimal();
 
     // FAZER A LÓGICA DE VERIFICAR SE JÁ EXISTE O PRODUTO
