@@ -362,6 +362,26 @@ void installmentDatesMenu()
     cin.get();
 }
 
+// mostra as datas calculadas de cada parcela
+void showInstallmentDates(int numParcelas, float valorParcela)
+{
+    // pega a data atual e converte para struct Date
+    Date currentDate = stringToDate(getCurrentDate());
+
+    cout << "\nDatas das parcelas:\n";
+    cout << "+-----------------------------+\n";
+
+    // para cada parcela, calcula a data (30 dias * número da parcela)
+    for (int i = 1; i <= numParcelas; i++)
+    {
+        Date parcelaDate = addDays(currentDate, 30 * i);
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2)
+             << valorParcela << " - " << dateToString(parcelaDate) << "\n";
+    }
+
+    cout << "+-----------------------------+\n";
+}
+
 void sellProduct()
 {
     // FAZER A LÓGICA DE VENDER PRODUTO
