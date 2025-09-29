@@ -1,1 +1,4 @@
-
+jose,4777.4,234.2
+teste,67,69
+gabriel,436,2
+julio,24,4

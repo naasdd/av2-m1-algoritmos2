@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <iomanip> // Para setprecision e setw
 
 using namespace std;
@@ -29,7 +30,7 @@ int lerNumero()
     int numero;
     while (!(cin >> numero))
     {
-        cin.clear(); // limpa erro
+        cin.clear();            // limpa erro
         cin.ignore(1000, '\n'); // descarta entrada inválida
         cout << "Valor inválido! Digite um número inteiro: ";
     }
@@ -50,7 +51,6 @@ float lerDecimal()
     return numero;
 }
 
-
 string getCurrentDate()
 {
     time_t atualTime = time(0);
@@ -62,6 +62,56 @@ string getCurrentDate()
        << (now->tm_year + 1900);
 
     return ss.str();
+}
+
+// Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
+Product updateDatabase(Product userInput)
+{
+    ifstream readDataBaseTXT("./database.txt");
+    string line;
+    Product temp;
+    vector<string> lines;
+
+    int i = 0;
+
+    cout << "\n[DEBBUG] Iniciando leitura de arquivo txt\n";
+    while (getline(readDataBaseTXT, line))
+    {
+        if (line.empty())
+            continue; // pula linhas vazias
+
+        string nameSTR, quantitySTR, priceSTR;
+        stringstream ss(line); // stringstream é um tipo string manipulável
+
+        getline(ss, nameSTR, ',');
+        getline(ss, quantitySTR, ',');
+        getline(ss, priceSTR, ',');
+
+        if (userInput.productName == nameSTR)
+        {
+            cout << "[DEBBUG] Produto já cadastrado no banco de dados" << endl;
+
+            userInput.amountProduct += stof(quantitySTR);
+
+        }
+        else
+        {
+            lines.push_back(line);
+        }
+    }
+
+    // Reescreve database
+    ofstream overwriteDataBaseTXT("./database.txt", ios::trunc); // começa a reescrever todo o banco
+
+    overwriteDataBaseTXT << userInput.productName << "," << userInput.amountProduct << "," << userInput.productPrice << endl;
+
+    for (int i = 0; i < lines.size(); i++)
+    {
+        string l = lines[i];
+        overwriteDataBaseTXT << l << "\n";
+    }
+
+    return userInput;
 }
 
 void createProduct()
@@ -82,16 +132,12 @@ void createProduct()
     cout << "Valor de venda: ";
     temp.productPrice = lerDecimal();
 
-    // FAZER A LÓGICA DE VERIFICAR SE JÁ EXISTE O PRODUTO
+    temp = updateDatabase(temp);
 
-    ofstream dataBaseTXT;
-    dataBaseTXT.open("./database.txt");
-    dataBaseTXT << temp.productName << "," << temp.amountProduct << "," << temp.productPrice << endl;
-    dataBaseTXT.close();
 
     cout << "\n*** PRODUTO CADASTRADO COM SUCESSO! ***\n";
     cout << "Pressione Enter para continuar...";
-    cin.ignore();
+    // cin.ignore();
     cin.get();
 }
 
@@ -110,20 +156,21 @@ Product readDataBase()
             continue; // pula linhas vazias
 
         string nameSTR, quantitySTR, priceSTR;
-        stringstream ss(line);
+        stringstream ss(line); // stringstream é um tipo string manipulável
 
-        getline(ss, nameSTR, ',');
+        getline(ss, nameSTR, ','); // pega a string SS, guarda em nameSTR, e lê até chegar na ","
         getline(ss, quantitySTR, ',');
         getline(ss, priceSTR, ',');
 
         // FAZER A LÓGICA DE VALIDAÇÃO DE CAMPOS ANTES DE CONVERTER
+
         if (quantitySTR.empty() || priceSTR.empty())
             continue; // pula linha inválida
 
         try
         {
             temp.productName = nameSTR;
-            temp.amountProduct = stof(quantitySTR);
+            temp.amountProduct = stof(quantitySTR); // stof() transforma string em float
             temp.productPrice = stof(priceSTR);
         }
         catch (const std::exception &)
@@ -299,9 +346,9 @@ void mainMenu()
     {
         system("cls");
         cout << "\n+-----------------------------+\n";
-        cout << "| Data: " << getCurrentDate() << "              |\n";
+        cout << "|       Data: " << getCurrentDate() << "      |\n";
         cout << "+-----------------------------+\n";
-        cout << "|          Menu Principal     |\n";
+        cout << "|        Menu Principal       |\n";
         cout << "+-----------------------------+\n";
         cout << "  [1] Cadastrar produto\n"; // LOGICA PARA VERIFICAR SE É NUMERO
         cout << "  [2] Vender produto\n";
