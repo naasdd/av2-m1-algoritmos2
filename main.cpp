@@ -13,7 +13,7 @@ using namespace std;
 
 struct Date
 {
-    int month, day, year;
+    int day, month, year;
 };
 
 struct Product
@@ -71,6 +71,28 @@ string getCurrentDate()
     return ss.str();
 }
 
+// converte string de data "dd/mm/yyyy" para struct Date
+Date stringToDate(string dateStr)
+{
+    // segue a mesma lógica da função getCurrentDate(), mas usa struct
+    Date d;
+    stringstream ss(dateStr);
+    char delimiter; // para capturar as barras "/"
+    
+    ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
+    
+    return d;
+}
+
+// converte struct Date para string formatada "dd/mm/yyyy"
+string dateToString(Date d)
+{
+    stringstream ss;
+    ss << setw(2) << setfill('0') << d.day << "/"
+       << setw(2) << setfill('0') << d.month << "/"
+       << d.year;
+    return ss.str();
+}
 
 // Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
 Product updateDatabase(Product userInput)
