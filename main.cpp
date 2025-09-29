@@ -74,13 +74,12 @@ string getCurrentDate()
 // converte string de data "dd/mm/yyyy" para struct Date
 Date stringToDate(string dateStr)
 {
-    // segue a mesma lógica da função getCurrentDate(), mas usa struct
     Date d;
     stringstream ss(dateStr);
     char delimiter; // para capturar as barras "/"
-    
+
     ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
-    
+
     return d;
 }
 
@@ -92,6 +91,42 @@ string dateToString(Date d)
        << setw(2) << setfill('0') << d.month << "/"
        << d.year;
     return ss.str();
+}
+
+// verifica se um ano é bissexto
+bool isLeapYear(int year)
+{
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+// adiciona dias a uma data (calcula parcelas)
+Date addDays(Date d, int days)
+{
+    // dias em cada mês (jan=31, fev=28, mar=31, etc)
+    int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    // verifica se o ano é bissexto e ajusta fevereiro (utilizando operador ternário)
+    daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
+
+    d.day += days; // adiciona os dias
+
+    // enquanto o dia ultrapassar o limite do mês
+    while (d.day > daysInMonth[d.month])
+    {
+        d.day -= daysInMonth[d.month]; // subtrai os dias do mês atual
+        d.month++;                     // avança para o próximo mês
+
+        // se passou de dezembro, vai para janeiro do próximo ano
+        if (d.month > 12)
+        {
+            d.month = 1;
+            d.year++;
+            // recalcula fevereiro para o novo ano
+            daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
+        }
+    }
+
+    return d;
 }
 
 // Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
