@@ -129,6 +129,26 @@ Date addDays(Date d, int days)
     return d;
 }
 
+// mostra as datas calculadas de cada parcela
+void showInstallmentDates(int numParcelas, float valorParcela)
+{
+    // pega a data atual e converte para struct Date
+    Date currentDate = stringToDate(getCurrentDate());
+
+    cout << "\nDatas das parcelas:\n";
+    cout << "+-----------------------------+\n";
+
+    // para cada parcela, calcula a data (30 dias * número da parcela)
+    for (int i = 1; i <= numParcelas; i++)
+    {
+        Date parcelaDate = addDays(currentDate, 30 * i);
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2)
+             << valorParcela << " - " << dateToString(parcelaDate) << "\n";
+    }
+
+    cout << "+-----------------------------+\n";
+}
+
 // Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
 Product updateDatabase(Product userInput)
 {
@@ -282,14 +302,16 @@ void paymentOptionsMenu()
             cout << "\n+-----------------------------+\n";
             cout << "|      Resumo da Compra       |\n";
             cout << "+-----------------------------+\n";
-            cout << "\n*** AQUI VAI A LÓGICA DO PAGAMENTO À VISTA ***\n";
-            cout << "Total: R$ " << totalCompra << "\n";
+            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
             cout << "Desconto (5%): R$ " << (totalCompra * 0.05f) << "\n";
             cout << "Total a pagar: R$ " << (totalCompra * 0.95f) << "\n";
             cout << "Forma: À VISTA\n";
+
+            // PARTE 4: Mostra data de vencimento (pagamento à vista = 1 parcela)
+            showInstallmentDates(1, totalCompra * 0.95f);
+
             cout << "\nVenda finalizada!\n";
             cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             return;
         case 2:
@@ -360,6 +382,26 @@ void installmentDatesMenu()
     cout << "\nPressione Enter para continuar...";
     cin.ignore();
     cin.get();
+}
+
+// mostra as datas calculadas de cada parcela
+void showInstallmentDates(int numParcelas, float valorParcela)
+{
+    // pega a data atual e converte para struct Date
+    Date currentDate = stringToDate(getCurrentDate());
+
+    cout << "\nDatas das parcelas:\n";
+    cout << "+-----------------------------+\n";
+
+    // para cada parcela, calcula a data (30 dias * número da parcela)
+    for (int i = 1; i <= numParcelas; i++)
+    {
+        Date parcelaDate = addDays(currentDate, 30 * i);
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2)
+             << valorParcela << " - " << dateToString(parcelaDate) << "\n";
+    }
+
+    cout << "+-----------------------------+\n";
 }
 
 // mostra as datas calculadas de cada parcela
