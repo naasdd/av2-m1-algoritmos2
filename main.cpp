@@ -1,13 +1,11 @@
 #include <iostream>
-#include <stdio.h>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <iomanip> // Para setprecision e setw
+#include <cstdlib> // funções utilitárias (system)
+#include <ctime>   // usado para funções de data e hora
+#include <string>  // tipo string e operações
+#include <fstream> // leitura e escrita de arquivos
+#include <sstream> // manipulação de string streams (stringstream)
+#include <vector>  // contêiner vector
+#include <iomanip> // formatação de I/O (setw, setfill, setprecision, fixed)
 
 using namespace std;
 
@@ -307,7 +305,7 @@ void paymentOptionsMenu()
             cout << "Total a pagar: R$ " << (totalCompra * 0.95f) << "\n";
             cout << "Forma: À VISTA\n";
 
-            // PARTE 4: Mostra data de vencimento (pagamento à vista = 1 parcela)
+            // mostra data de vencimento (pagamento à vista = 1 parcela)
             showInstallmentDates(1, totalCompra * 0.95f);
 
             cout << "\nVenda finalizada!\n";
@@ -334,9 +332,10 @@ void paymentOptionsMenu()
             }
 
             float valorParcela = totalCompra / parcelas;
-            cout << "\n" << parcelas << "x de R$ " << valorParcela << "\n";
-            
-            // PARTE 6: Mostra datas de cada parcela
+            cout << "\n"
+                 << parcelas << "x de R$ " << valorParcela << "\n";
+
+            // mostra datas de cada parcela
             showInstallmentDates(parcelas, valorParcela);
 
             cout << "\nVenda finalizada!\n";
@@ -350,19 +349,31 @@ void paymentOptionsMenu()
             cout << "\n+-----------------------------+\n";
             cout << "|      Parcelamento com Juros |\n";
             cout << "+-----------------------------+\n";
-            cout << "\n*** AQUI VAI A LÓGICA DO PARCELAMENTO COM JUROS ***\n";
-            cout << "Total: R$ " << totalCompra << "\n";
+            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
             cout << "Juros (10%): R$ " << (totalCompra * 0.10f) << "\n";
             float totalComJuros = totalCompra * 1.10f;
             cout << "Total com juros: R$ " << totalComJuros << "\n";
             cout << "Escolha o número de parcelas (4-12): ";
             int parcelasJuros = lerNumero();
 
+            // validação: parcelas deve estar entre 4 e 12
+            if (parcelasJuros < 4 || parcelasJuros > 12)
+            {
+                cout << "\nNúmero de parcelas inválido! Deve ser entre 4 e 12.\n";
+                cout << "Pressione Enter para continuar...";
+                cin.get();
+                break;
+            }
+
+            float valorParcelaJuros = totalComJuros / parcelasJuros;
             cout << "\n"
-                 << parcelasJuros << "x de R$ " << (totalComJuros / parcelasJuros) << "\n";
+                 << parcelasJuros << "x de R$ " << valorParcelaJuros << "\n";
+
+            // mostra datas de cada parcela com juros
+            showInstallmentDates(parcelasJuros, valorParcelaJuros);
+
             cout << "\nVenda finalizada!\n";
             cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             return;
         }
