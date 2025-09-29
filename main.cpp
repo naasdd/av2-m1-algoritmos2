@@ -53,16 +53,24 @@ float lerDecimal()
 
 string getCurrentDate()
 {
+    // pega o horário atual em segundos desde 1 jan 1970
     time_t atualTime = time(0);
+
+    // converte esse valor para uma struct com dia/mes/ano/hora
     tm *now = localtime(&atualTime);
 
+    // cria um fluxo de string para montar a data formatada
     stringstream ss;
+
+    // formata: dia/mês/ano (com 2 dígitos pro dia e mês, e zeros à esquerda se precisar)
     ss << setw(2) << setfill('0') << now->tm_mday << "/"
        << setw(2) << setfill('0') << (now->tm_mon + 1) << "/"
        << (now->tm_year + 1900);
 
+    // retorna a data como string no formato "dd/mm/yyyy"
     return ss.str();
 }
+
 
 // Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
 Product updateDatabase(Product userInput)
@@ -92,7 +100,6 @@ Product updateDatabase(Product userInput)
             cout << "[DEBBUG] Produto já cadastrado no banco de dados" << endl;
 
             userInput.amountProduct += stof(quantitySTR);
-
         }
         else
         {
@@ -133,7 +140,6 @@ void createProduct()
     temp.productPrice = lerDecimal();
 
     temp = updateDatabase(temp);
-
 
     cout << "\n*** PRODUTO CADASTRADO COM SUCESSO! ***\n";
     cout << "Pressione Enter para continuar...";
