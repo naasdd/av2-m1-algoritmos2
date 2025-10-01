@@ -1,4 +1,11 @@
-jose,4777.4,234.2
+nathan gustavo,1,2000
+matheus pompeo,2,10
+c,2,2
+batata frita,2,2
+batata palha,20,10
+1,2,2
+pompeo,2,3000
+jose,4781.4,2
 teste,67,69
 gabriel,436,2
 julio,24,4

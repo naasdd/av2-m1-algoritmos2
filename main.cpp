@@ -25,6 +25,16 @@ struct Product
 
 Product productArray[20];
 
+string lerString(){
+   string nome;
+   getline(cin,nome);
+   while(nome.empty()){
+    cout<<"Nome inválido! Digite um nome válido: ";
+    getline(cin, nome); 
+   } 
+   return nome;
+}
+
 int lerNumero()
 {
     int numero;
@@ -131,7 +141,7 @@ void createProduct()
     cout << "+-----------------------------+\n";
 
     cout << "Nome do produto: ";
-    cin >> temp.productName;
+    temp.productName = lerString();
 
     cout << "Quantidade: ";
     temp.amountProduct = lerDecimal();
