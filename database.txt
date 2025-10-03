@@ -1,11 +1,11 @@
-nathan gustavo,1,2000
-matheus pompeo,2,10
-c,2,2
-batata frita,2,2
-batata palha,20,10
-1,2,2
-pompeo,2,3000
-jose,4781.4,2
-teste,67,69
-gabriel,436,2
-julio,24,4
+Arroz 5Kg,48,25.9
+Feijão 1Kg,40,8.5
+Macarrão 500g,60,4.2
+Óleo de Soja 900ml,30,6.99
+Açúcar 1Kg,45,5.7
+Café 500g,25,17.5
+Leite 1L,80,4.9
+Manteiga 200g,20,9.8
+Sabão em Pó 1Kg,35,12.99
+Detergente 500ml,60,2.5
+a,32,32
