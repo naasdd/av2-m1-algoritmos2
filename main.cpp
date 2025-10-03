@@ -1,19 +1,17 @@
 #include <iostream>
-#include <stdio.h>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <iomanip> // Para setprecision e setw
+#include <cstdlib> // funções utilitárias (system)
+#include <ctime>   // usado para funções de data e hora
+#include <string>  // tipo string e operações
+#include <fstream> // leitura e escrita de arquivos
+#include <sstream> // manipulação de string streams (stringstream)
+#include <vector>  // contêiner vector
+#include <iomanip> // formatação de I/O (setw, setfill, setprecision, fixed)
 
 using namespace std;
 
 struct Date
 {
-    int month, day, year;
+    int day, month, year;
 };
 
 struct Product
@@ -81,6 +79,83 @@ string getCurrentDate()
     return ss.str();
 }
 
+// converte string de data "dd/mm/yyyy" para struct Date
+Date stringToDate(string dateStr)
+{
+    Date d;
+    stringstream ss(dateStr);
+    char delimiter; // para capturar as barras "/"
+
+    ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
+
+    return d;
+}
+
+// converte struct Date para string formatada "dd/mm/yyyy"
+string dateToString(Date d)
+{
+    stringstream ss;
+    ss << setw(2) << setfill('0') << d.day << "/"
+       << setw(2) << setfill('0') << d.month << "/"
+       << d.year;
+    return ss.str();
+}
+
+// verifica se um ano é bissexto
+bool isLeapYear(int year)
+{
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+// adiciona dias a uma data (calcula parcelas)
+Date addDays(Date d, int days)
+{
+    // dias em cada mês (jan=31, fev=28, mar=31, etc)
+    int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    // verifica se o ano é bissexto e ajusta fevereiro (utilizando operador ternário)
+    daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
+
+    d.day += days; // adiciona os dias
+
+    // enquanto o dia ultrapassar o limite do mês
+    while (d.day > daysInMonth[d.month])
+    {
+        d.day -= daysInMonth[d.month]; // subtrai os dias do mês atual
+        d.month++;                     // avança para o próximo mês
+
+        // se passou de dezembro, vai para janeiro do próximo ano
+        if (d.month > 12)
+        {
+            d.month = 1;
+            d.year++;
+            // recalcula fevereiro para o novo ano
+            daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
+        }
+    }
+
+    return d;
+}
+
+// mostra as datas calculadas de cada parcela
+void showInstallmentDates(int numParcelas, float valorParcela)
+{
+    // pega a data atual e converte para struct Date
+    Date currentDate = stringToDate(getCurrentDate());
+
+    cout << "\nDatas das parcelas:\n";
+    cout << "+-----------------------------+\n";
+
+    // para cada parcela, calcula a data (30 dias * número da parcela)
+    for (int i = 1; i <= numParcelas; i++)
+    {
+        Date parcelaDate = addDays(currentDate, 30 * i);
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2)
+             << valorParcela << " - " << dateToString(parcelaDate) << "\n";
+    }
+
+    cout << "+-----------------------------+\n";
+}
 
 // Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
 Product updateDatabase(Product userInput)
@@ -235,14 +310,16 @@ void paymentOptionsMenu()
             cout << "\n+-----------------------------+\n";
             cout << "|      Resumo da Compra       |\n";
             cout << "+-----------------------------+\n";
-            cout << "\n*** AQUI VAI A LÓGICA DO PAGAMENTO À VISTA ***\n";
-            cout << "Total: R$ " << totalCompra << "\n";
+            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
             cout << "Desconto (5%): R$ " << (totalCompra * 0.05f) << "\n";
             cout << "Total a pagar: R$ " << (totalCompra * 0.95f) << "\n";
             cout << "Forma: À VISTA\n";
+
+            // mostra data de vencimento (pagamento à vista = 1 parcela)
+            showInstallmentDates(1, totalCompra * 0.95f);
+
             cout << "\nVenda finalizada!\n";
             cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             return;
         case 2:
@@ -251,16 +328,28 @@ void paymentOptionsMenu()
             cout << "\n+-----------------------------+\n";
             cout << "|      Parcelamento sem Juros |\n";
             cout << "+-----------------------------+\n";
-            cout << "\n*** AQUI VAI A LÓGICA DO PARCELAMENTO SEM JUROS ***\n";
-            cout << "Total: R$ " << totalCompra << "\n";
+            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
             cout << "Escolha o número de parcelas (1-3): ";
             int parcelas = lerNumero();
 
+            // validação: parcelas deve estar entre 1 e 3
+            if (parcelas < 1 || parcelas > 3)
+            {
+                cout << "\nNúmero de parcelas inválido! Deve ser entre 1 e 3.\n";
+                cout << "Pressione Enter para continuar...";
+                cin.get();
+                break;
+            }
+
+            float valorParcela = totalCompra / parcelas;
             cout << "\n"
-                 << parcelas << "x de R$ " << (totalCompra / parcelas) << "\n";
+                 << parcelas << "x de R$ " << valorParcela << "\n";
+
+            // mostra datas de cada parcela
+            showInstallmentDates(parcelas, valorParcela);
+
             cout << "\nVenda finalizada!\n";
             cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             return;
         }
@@ -270,19 +359,31 @@ void paymentOptionsMenu()
             cout << "\n+-----------------------------+\n";
             cout << "|      Parcelamento com Juros |\n";
             cout << "+-----------------------------+\n";
-            cout << "\n*** AQUI VAI A LÓGICA DO PARCELAMENTO COM JUROS ***\n";
-            cout << "Total: R$ " << totalCompra << "\n";
+            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
             cout << "Juros (10%): R$ " << (totalCompra * 0.10f) << "\n";
             float totalComJuros = totalCompra * 1.10f;
             cout << "Total com juros: R$ " << totalComJuros << "\n";
             cout << "Escolha o número de parcelas (4-12): ";
             int parcelasJuros = lerNumero();
 
+            // validação: parcelas deve estar entre 4 e 12
+            if (parcelasJuros < 4 || parcelasJuros > 12)
+            {
+                cout << "\nNúmero de parcelas inválido! Deve ser entre 4 e 12.\n";
+                cout << "Pressione Enter para continuar...";
+                cin.get();
+                break;
+            }
+
+            float valorParcelaJuros = totalComJuros / parcelasJuros;
             cout << "\n"
-                 << parcelasJuros << "x de R$ " << (totalComJuros / parcelasJuros) << "\n";
+                 << parcelasJuros << "x de R$ " << valorParcelaJuros << "\n";
+
+            // mostra datas de cada parcela com juros
+            showInstallmentDates(parcelasJuros, valorParcelaJuros);
+
             cout << "\nVenda finalizada!\n";
             cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             return;
         }
