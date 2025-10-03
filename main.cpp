@@ -9,89 +9,97 @@
 
 using namespace std;
 
+// Estrutura para datas
 struct Date
 {
-    int day, month, year;
+    int day, month, year; // dia, mês e ano
 };
 
+// Estrutura de produto no estoque
 struct Product
 {
-    string productName;
-    float amountProduct;
-    float productPrice;
+    string name;     // nome do produto
+    float quantity;  // quantidade disponível
+    float unitPrice; // preço unitário
 };
 
-Product productArray[20];
-
-string lerString(){
-   string nome;
-   getline(cin,nome);
-   while(nome.empty()){
-    cout<<"Nome inválido! Digite um nome válido: ";
-    getline(cin, nome); 
-   } 
-   return nome;
-}
-
-int lerNumero()
+// Estrutura para itens no carrinho de compras
+struct CartItem
 {
-    int numero;
-    while (!(cin >> numero))
-    {
-        cin.clear();            // limpa erro
-        cin.ignore(1000, '\n'); // descarta entrada inválida
-        cout << "Valor inválido! Digite um número inteiro: ";
-    }
-    cin.ignore(1000, '\n'); // limpa resto da linha
-    return numero;
-}
+    string name;     // nome do produto
+    float quantity;  // quantidade escolhida pelo cliente
+    float unitPrice; // preço unitário do produto
+    float subtotal;  // subtotal = quantity * unitPrice
+};
 
-float lerDecimal()
-{
-    float numero;
-    while (!(cin >> numero))
-    {
-        cin.clear();
-        cin.ignore(1000, '\n');
-        cout << "Valor inválido! Digite um número decimal: ";
-    }
-    cin.ignore(1000, '\n');
-    return numero;
-}
+Product productArray[20]; // até 20 produtos cadastrados
+int totalProducts = 0;    // contador de produtos no array
+vector<CartItem> cart;    // carrinho de compras (dinâmico com vector)
 
+// Pega a data atual formatada
 string getCurrentDate()
 {
-    // pega o horário atual em segundos desde 1 jan 1970
-    time_t atualTime = time(0);
-
-    // converte esse valor para uma struct com dia/mes/ano/hora
-    tm *now = localtime(&atualTime);
-
-    // cria um fluxo de string para montar a data formatada
+    time_t nowTime = time(0);      // pega tempo atual em segundos
+    tm *now = localtime(&nowTime); // converte para data local
     stringstream ss;
-
-    // formata: dia/mês/ano (com 2 dígitos pro dia e mês, e zeros à esquerda se precisar)
-    ss << setw(2) << setfill('0') << now->tm_mday << "/"
-       << setw(2) << setfill('0') << (now->tm_mon + 1) << "/"
-       << (now->tm_year + 1900);
-
-    // retorna a data como string no formato "dd/mm/yyyy"
+    ss << setw(2) << setfill('0') << now->tm_mday << "/"      // setw(2) -> largura mínima de 2 caracteres
+       << setw(2) << setfill('0') << (now->tm_mon + 1) << "/" // setfill('0') -> preenche com zero à esquerda
+       << (now->tm_year + 1900);                              // ano atual
     return ss.str();
 }
 
-// converte string de data "dd/mm/yyyy" para struct Date
+// Lê string com validação
+string readString()
+{
+    string input;
+    getline(cin, input);
+    while (input.empty()) // impede entrada vazia
+    {
+        cout << "Entrada invalida! Digite um nome valido: ";
+        getline(cin, input);
+    }
+    return input;
+}
+
+// Lê número inteiro com validação
+int readInt()
+{
+    int number;
+    while (!(cin >> number)) // verifica se é inteiro
+    {
+        cin.clear();            // limpa flags de erro
+        cin.ignore(1000, '\n'); // descarta buffer
+        cout << "Entrada invalida! Digite um numero inteiro: ";
+    }
+    cin.ignore(1000, '\n'); // limpa buffer do teclado
+    return number;
+}
+
+// Lê número decimal com validação
+float readFloat()
+{
+    float number;
+    while (!(cin >> number)) // verifica se é decimal
+    {
+        cin.clear();            // limpa flags de erro
+        cin.ignore(1000, '\n'); // descarta buffer
+        cout << "Entrada invalida! Digite um numero decimal: ";
+    }
+    cin.ignore(1000, '\n'); // limpa buffer
+    return number;
+}
+
+// Converte string em Date (dd/mm/yyyy)
 Date stringToDate(string dateStr)
 {
     Date d;
     stringstream ss(dateStr);
-    char delimiter; // para capturar as barras "/"
-
+    char delimiter;
     ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
-
     return d;
 }
 
-// converte struct Date para string formatada "dd/mm/yyyy"
+// Converte Date em string
 string dateToString(Date d)
 {
     stringstream ss;
@@ -101,406 +109,406 @@ string dateToString(Date d)
     return ss.str();
 }
 
-// verifica se um ano é bissexto
+// Verifica ano bissexto
 bool isLeapYear(int year)
 {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
-// adiciona dias a uma data (calcula parcelas)
+// Adiciona dias a uma data
 Date addDays(Date d, int days)
 {
-    // dias em cada mês (jan=31, fev=28, mar=31, etc)
     int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-    // verifica se o ano é bissexto e ajusta fevereiro (utilizando operador ternário)
-    daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
-
-    d.day += days; // adiciona os dias
-
-    // enquanto o dia ultrapassar o limite do mês
-    while (d.day > daysInMonth[d.month])
+    daysInMonth[2] = isLeapYear(d.year) ? 29 : 28; // ajusta fevereiro se for bissexto
+    d.day += days;
+    while (d.day > daysInMonth[d.month]) // rola para próximo mês
     {
-        d.day -= daysInMonth[d.month]; // subtrai os dias do mês atual
-        d.month++;                     // avança para o próximo mês
-
-        // se passou de dezembro, vai para janeiro do próximo ano
-        if (d.month > 12)
+        d.day -= daysInMonth[d.month];
+        d.month++;
+        if (d.month > 12) // rola para próximo ano
         {
             d.month = 1;
             d.year++;
-            // recalcula fevereiro para o novo ano
-            daysInMonth[2] = isLeapYear(d.year) ? 29 : 28;
+            daysInMonth[2] = isLeapYear(d.year) ? 29 : 28; // ajusta fevereiro
         }
     }
-
     return d;
 }
 
-// mostra as datas calculadas de cada parcela
-void showInstallmentDates(int numParcelas, float valorParcela)
+// Mostra datas das parcelas
+void showInstallmentDates(int numInstallments, float installmentValue)
 {
-    // pega a data atual e converte para struct Date
     Date currentDate = stringToDate(getCurrentDate());
-
     cout << "\nDatas das parcelas:\n";
-    cout << "+-----------------------------+\n";
-
-    // para cada parcela, calcula a data (30 dias * número da parcela)
-    for (int i = 1; i <= numParcelas; i++)
+    cout << "+-------------------------------------------+\n";
+    for (int i = 1; i <= numInstallments; i++)
     {
-        Date parcelaDate = addDays(currentDate, 30 * i);
-        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2)
-             << valorParcela << " - " << dateToString(parcelaDate) << "\n";
+        Date installmentDate = addDays(currentDate, 30 * i);           // cada parcela +30 dias
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2) // fixed -> força ponto fixo (não notação científica)
+             << installmentValue << " - " << dateToString(installmentDate) << "\n";
     }
-
-    cout << "+-----------------------------+\n";
+    cout << "+-------------------------------------------+\n";
 }
 
-// Após o usuario cadastrar, essa função vê se ja tinha o produto adicionado antes
-Product updateDatabase(Product userInput)
+// Salva produtos no arquivo database.txt
+void saveDatabase()
 {
-    ifstream readDataBaseTXT("./database.txt");
-    string line;
-    Product temp;
-    vector<string> lines;
-
-    int i = 0;
-
-    cout << "\n[DEBBUG] Iniciando leitura de arquivo txt\n";
-    while (getline(readDataBaseTXT, line))
+    ofstream file("../database.txt", ios::trunc); // sobrescreve arquivo
+    for (int i = 0; i < totalProducts; i++)
     {
-        if (line.empty())
-            continue; // pula linhas vazias
-
-        string nameSTR, quantitySTR, priceSTR;
-        stringstream ss(line); // stringstream é um tipo string manipulável
-
-        getline(ss, nameSTR, ',');
-        getline(ss, quantitySTR, ',');
-        getline(ss, priceSTR, ',');
-
-        if (userInput.productName == nameSTR)
-        {
-            cout << "[DEBBUG] Produto já cadastrado no banco de dados" << endl;
-
-            userInput.amountProduct += stof(quantitySTR);
-        }
-        else
-        {
-            lines.push_back(line);
-        }
+        file << productArray[i].name << ","
+             << productArray[i].quantity << ","
+             << productArray[i].unitPrice << endl;
     }
-
-    // Reescreve database
-    ofstream overwriteDataBaseTXT("./database.txt", ios::trunc); // começa a reescrever todo o banco
-
-    overwriteDataBaseTXT << userInput.productName << "," << userInput.amountProduct << "," << userInput.productPrice << endl;
-
-    for (int i = 0; i < lines.size(); i++)
-    {
-        string l = lines[i];
-        overwriteDataBaseTXT << l << "\n";
-    }
-
-    return userInput;
+    file.close();
 }
 
+// Atualiza ou adiciona produto no estoque
+Product updateDatabase(Product newProduct)
+{
+    bool found = false;
+    for (int i = 0; i < totalProducts; i++)
+    {
+        if (productArray[i].name == newProduct.name) // produto já existe
+        {
+            productArray[i].quantity += newProduct.quantity;  // soma quantidade
+            productArray[i].unitPrice = newProduct.unitPrice; // atualiza preço
+            found = true;
+            newProduct = productArray[i];
+            break;
+        }
+    }
+    if (!found && totalProducts < 20) // novo produto
+    {
+        productArray[totalProducts] = newProduct;
+        totalProducts++;
+    }
+    saveDatabase();
+    return newProduct;
+}
+
+// Cadastro de novo produto
 void createProduct()
 {
-    system("cls");
+    system("cls"); // limpa tela
     Product temp;
-
-    cout << "\n+-----------------------------+\n";
-    cout << "|      Cadastrar Produto      |\n";
-    cout << "+-----------------------------+\n";
-
+    cout << "\n+-------------------------------------------+\n";
+    cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << " |\n";
+    cout << "+-------------------------------------------+\n";
+    cout << "| Cadastrar Produto                         |\n";
+    cout << "+-------------------------------------------+\n";
     cout << "Nome do produto: ";
-    temp.productName = lerString();
-
+    temp.name = readString();
     cout << "Quantidade: ";
-    temp.amountProduct = lerDecimal();
-
+    temp.quantity = readFloat();
     cout << "Valor de venda: ";
-    temp.productPrice = lerDecimal();
-
-    temp = updateDatabase(temp);
-
+    temp.unitPrice = readFloat();
+    temp = updateDatabase(temp); // salva no array + arquivo
     cout << "\n*** PRODUTO CADASTRADO COM SUCESSO! ***\n";
-    cout << "Pressione Enter para continuar...";
-    // cin.ignore();
-    cin.get();
+    cin.get(); // pausa até o usuário pressionar Enter
 }
 
-Product readDataBase()
+// Lê o arquivo database.txt e carrega produtos
+void loadDatabase()
 {
-    ifstream dataBaseTXT("./database.txt");
+    ifstream file("../database.txt");
     string line;
     Product temp;
-
     int i = 0;
-
-    cout << "\n[DEBBUG] Iniciando leitura de arquivo txt\n";
-    while (getline(dataBaseTXT, line))
+    while (getline(file, line)) // lê linha por linha
     {
         if (line.empty())
-            continue; // pula linhas vazias
+            continue;
+        string nameStr, quantityStr, priceStr;
+        stringstream ss(line);
+        getline(ss, nameStr, ',');
+        getline(ss, quantityStr, ',');
+        getline(ss, priceStr, ',');
 
-        string nameSTR, quantitySTR, priceSTR;
-        stringstream ss(line); // stringstream é um tipo string manipulável
+        if (quantityStr.empty() || priceStr.empty())
+            continue;
 
-        getline(ss, nameSTR, ','); // pega a string SS, guarda em nameSTR, e lê até chegar na ","
-        getline(ss, quantitySTR, ',');
-        getline(ss, priceSTR, ',');
-
-        // FAZER A LÓGICA DE VALIDAÇÃO DE CAMPOS ANTES DE CONVERTER
-
-        if (quantitySTR.empty() || priceSTR.empty())
-            continue; // pula linha inválida
-
-        try
+        try // evita erro se conversão string -> float falhar
         {
-            temp.productName = nameSTR;
-            temp.amountProduct = stof(quantitySTR); // stof() transforma string em float
-            temp.productPrice = stof(priceSTR);
+            temp.name = nameStr;
+            temp.quantity = stof(quantityStr); // string -> float
+            temp.unitPrice = stof(priceStr);
         }
-        catch (const std::exception &)
+        catch (const std::exception &) // captura exceção se conversão falhar
         {
-            continue; // pula linha inválida
+            continue; // ignora linha inválida
         }
 
-        cout << temp.productName << " "
-             << temp.amountProduct << " "
-             << temp.productPrice << "\n";
-
-        if (i < 20)
+        if (i < 20) // limite do array
         {
             productArray[i] = temp;
-            i += 1;
+            i++;
         }
     }
-
-    return temp;
+    totalProducts = i;
+    file.close();
 }
 
-void paymentOptionsMenu()
+// Lista todos os produtos cadastrados
+void listProducts()
 {
-    float totalCompra = 0.0f; // FAZER A LÓGICA PARA CALCULAR TOTAL DA COMPRA
+    system("cls");
+    cout << "\n+----------------------------------------------------------------+\n";
+    cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << "                      |\n";
+    cout << "+----------------------------------------------------------------+\n";
+    cout << "| ID | Produto                  | Quantidade   | Preco Unit.     |\n";
+    cout << "+----------------------------------------------------------------+\n";
+
+    if (totalProducts == 0)
+    {
+        cout << "|                 Nenhum produto cadastrado!                     |\n";
+    }
+    else
+    {
+        for (int i = 0; i < totalProducts; i++)
+        {
+            cout << "| " << setw(2) << left << (i + 1) << " | " // setw(2) -> largura 2, left -> alinha à esquerda
+                 << setw(25) << left << productArray[i].name << " | "
+                 << setw(11) << fixed << setprecision(2) << productArray[i].quantity << " | R$ " // fixed + setprecision(2) -> sempre 2 casas decimais
+                 << setw(12) << fixed << setprecision(2) << productArray[i].unitPrice << " |\n";
+        }
+    }
+    cout << "+----------------------------------------------------------------+\n";
+}
+
+// Mostra o carrinho
+void showCart()
+{
+    cout << "\n+----------------------------------------------------------------+\n";
+    cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << "                      |\n";
+    cout << "+----------------------------------------------------------------+\n";
+    cout << "| Produto                  | Qtd         | Preco Unit  | Subtotal|\n";
+    cout << "+----------------------------------------------------------------+\n";
+
+    float total = 0.0f; // inicializa total do carrinho
+    for (size_t i = 0; i < cart.size(); i++)
+    {
+        cout << "| " << setw(25) << left << cart[i].name << " | "                    // nome do produto, alinhado à esquerda
+             << setw(10) << fixed << setprecision(2) << cart[i].quantity << " | R$ " // quantidade com 2 casas decimais
+             << setw(9) << cart[i].unitPrice << " | R$ "
+             << setw(9) << cart[i].subtotal << " |\n"; // subtotal formatado
+        total += cart[i].subtotal;                     // acumula total
+    }
+    cout << "+----------------------------------------------------------------+\n";
+    cout << "| TOTAL: R$ " << setw(53) << fixed << setprecision(2) << total << "|\n"; // mostra total final
+    cout << "+----------------------------------------------------------------+\n";
+}
+
+// Calcula total do carrinho
+float getCartTotal()
+{
+    float total = 0.0f;
+    for (size_t i = 0; i < cart.size(); i++)
+        total += cart[i].subtotal; // soma todos os subtotais
+    return total;
+}
+
+// Menu de pagamento
+void paymentMenu()
+{
+    float totalPurchase = getCartTotal(); // total do carrinho
     int option;
     do
     {
         system("cls");
-        cout << "\n+-----------------------------+\n";
-        cout << "|      Formas de Pagamento    |\n";
-        cout << "+-----------------------------+\n";
-        cout << "\n*** AQUI VAI A LÓGICA DAS FORMAS DE PAGAMENTO ***\n";
-        cout << "\nTotal da compra: R$ " << totalCompra << "\n";
-        cout << "+-----------------------------+\n";
+        cout << "\n+-------------------------------------------+\n";
+        cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << " |\n";
+        cout << "+-------------------------------------------+\n";
+        cout << "| Formas de Pagamento                       |\n";
+        cout << "+-------------------------------------------+\n";
+        cout << "\nTotal da compra: R$ " << fixed << setprecision(2) << totalPurchase << "\n";
+        cout << "+-------------------------------------------+\n";
         cout << "  [1] À vista (5% desconto)\n";
         cout << "  [2] Até 3x sem juros\n";
         cout << "  [3] Até 12x com 10% juros\n";
         cout << "  [0] Voltar\n";
         cout << "Escolha uma opção: ";
-        option = lerNumero();
-
+        option = readInt();
         switch (option)
         {
         case 1:
             system("cls");
-            cout << "\n+-----------------------------+\n";
-            cout << "|      Resumo da Compra       |\n";
-            cout << "+-----------------------------+\n";
-            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
-            cout << "Desconto (5%): R$ " << (totalCompra * 0.05f) << "\n";
-            cout << "Total a pagar: R$ " << (totalCompra * 0.95f) << "\n";
-            cout << "Forma: À VISTA\n";
-
-            // mostra data de vencimento (pagamento à vista = 1 parcela)
-            showInstallmentDates(1, totalCompra * 0.95f);
-
+            cout << "\nTotal: R$ " << totalPurchase << "\n";
+            cout << "Desconto (5%): R$ " << (totalPurchase * 0.05f) << "\n";
+            cout << "Total a pagar: R$ " << (totalPurchase * 0.95f) << "\n";
+            showInstallmentDates(1, totalPurchase * 0.95f); // 1 parcela
+            cart.clear();                                   // limpa o carrinho (vector::clear)
+            saveDatabase();                                 // atualiza estoque
             cout << "\nVenda finalizada!\n";
-            cout << "Pressione Enter para continuar...";
-            cin.get();
+            cin.get(); // pausa para usuário ver o resultado
             return;
         case 2:
         {
-            system("cls");
-            cout << "\n+-----------------------------+\n";
-            cout << "|      Parcelamento sem Juros |\n";
-            cout << "+-----------------------------+\n";
-            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
-            cout << "Escolha o número de parcelas (1-3): ";
-            int parcelas = lerNumero();
-
-            // validação: parcelas deve estar entre 1 e 3
-            if (parcelas < 1 || parcelas > 3)
-            {
-                cout << "\nNúmero de parcelas inválido! Deve ser entre 1 e 3.\n";
-                cout << "Pressione Enter para continuar...";
-                cin.get();
+            cout << "Escolha o numero de parcelas (1-3): ";
+            int installments = readInt();
+            if (installments < 1 || installments > 3)
                 break;
-            }
-
-            float valorParcela = totalCompra / parcelas;
-            cout << "\n"
-                 << parcelas << "x de R$ " << valorParcela << "\n";
-
-            // mostra datas de cada parcela
-            showInstallmentDates(parcelas, valorParcela);
-
+            float installmentValue = totalPurchase / installments;
+            showInstallmentDates(installments, installmentValue);
+            cart.clear();   // limpa carrinho
+            saveDatabase(); // atualiza estoque
             cout << "\nVenda finalizada!\n";
-            cout << "Pressione Enter para continuar...";
-            cin.get();
+            cin.get(); // pausa
             return;
         }
         case 3:
         {
-            system("cls");
-            cout << "\n+-----------------------------+\n";
-            cout << "|      Parcelamento com Juros |\n";
-            cout << "+-----------------------------+\n";
-            cout << "Total: R$ " << fixed << setprecision(2) << totalCompra << "\n";
-            cout << "Juros (10%): R$ " << (totalCompra * 0.10f) << "\n";
-            float totalComJuros = totalCompra * 1.10f;
-            cout << "Total com juros: R$ " << totalComJuros << "\n";
-            cout << "Escolha o número de parcelas (4-12): ";
-            int parcelasJuros = lerNumero();
-
-            // validação: parcelas deve estar entre 4 e 12
-            if (parcelasJuros < 4 || parcelasJuros > 12)
-            {
-                cout << "\nNúmero de parcelas inválido! Deve ser entre 4 e 12.\n";
-                cout << "Pressione Enter para continuar...";
-                cin.get();
+            float totalWithInterest = totalPurchase * 1.10f; // 10% juros
+            cout << "Total com juros: R$ " << totalWithInterest << "\n";
+            cout << "Escolha o numero de parcelas (4-12): ";
+            int installments = readInt();
+            if (installments < 4 || installments > 12)
                 break;
-            }
-
-            float valorParcelaJuros = totalComJuros / parcelasJuros;
-            cout << "\n"
-                 << parcelasJuros << "x de R$ " << valorParcelaJuros << "\n";
-
-            // mostra datas de cada parcela com juros
-            showInstallmentDates(parcelasJuros, valorParcelaJuros);
-
+            float installmentValue = totalWithInterest / installments;
+            showInstallmentDates(installments, installmentValue);
+            cart.clear();
+            saveDatabase();
             cout << "\nVenda finalizada!\n";
-            cout << "Pressione Enter para continuar...";
             cin.get();
             return;
         }
         case 0:
-            break;
+            return; // volta
         default:
-            cout << "Opção inválida!\n";
-            cout << "Pressione Enter para continuar...";
-            cin.ignore();
-            cin.get();
             break;
         }
     } while (option != 0);
 }
 
-void installmentDatesMenu()
-{
-    system("cls");
-    cout << "\n+-----------------------------+\n";
-    cout << "|        Datas de Parcelas    |\n";
-    cout << "+-----------------------------+\n";
-    cout << "\n*** AQUI VAI A LÓGICA DE CALCULAR DATAS DAS PARCELAS ***\n";
-    cout << "\nParcelas com datas calculadas:\n";
-    cout << "Parcela 1: R$ 21.83 - 24/10/2025\n";
-    cout << "Parcela 2: R$ 21.83 - 24/11/2025\n";
-    cout << "Parcela 3: R$ 21.84 - 24/12/2025\n";
-    cout << "+-----------------------------+\n";
-    cout << "\nPressione Enter para continuar...";
-    cin.ignore();
-    cin.get();
-}
-
+// Venda de produtos
 void sellProduct()
-{
-    // FAZER A LÓGICA DE VENDER PRODUTO
-}
-
-void sellMenu()
 {
     int option;
     do
     {
-        system("cls");
-        cout << "\n+-----------------------------+\n";
-        cout << "|          Menu de Venda      |\n";
-        cout << "+-----------------------------+\n";
-        cout << "  [1] Formas de Pagamento \n";
-        cout << "  [2] Datas de Parcelas \n";
-        cout << "  [0] Voltar\n";
-        cout << "Escolha uma opção: ";
-        option = lerNumero();
-
-        switch (option)
+        listProducts(); // mostra produtos
+        if (totalProducts == 0)
         {
-        case 1:
-            paymentOptionsMenu();
-            break;
-        case 2:
-            installmentDatesMenu();
-            break;
-        case 0:
-            break;
-        default:
-            cout << "Opção inválida!\n";
-            cout << "Pressione Enter para continuar...";
-            cin.ignore();
+            cout << "\nNao ha produtos cadastrados para vender!\n";
+            cout << "Pressione Enter para voltar...";
             cin.get();
-            break;
+            return;
         }
-    } while (option != 0);
+        cout << "\nDigite o ID do produto (ou 0 para finalizar): ";
+        option = readInt();
+        if (option == 0)
+        {
+            if (!cart.empty())
+            {
+                system("cls");
+                showCart(); // mostra carrinho
+                cout << "\n[1] Finalizar venda\n[2] Cancelar venda\n[0] Voltar\nEscolha uma opção: ";
+                int confirm = readInt();
+                if (confirm == 1)
+                {
+                    paymentMenu();
+                    return;
+                }
+                if (confirm == 2)
+                {
+                    // devolve produtos ao estoque
+                    for (size_t i = 0; i < cart.size(); i++)
+                    {
+                        for (int j = 0; j < totalProducts; j++)
+                        {
+                            if (productArray[j].name == cart[i].name)
+                            {
+                                productArray[j].quantity += cart[i].quantity;
+                                break;
+                            }
+                        }
+                    }
+                    cart.clear(); // limpa carrinho
+                    saveDatabase();
+                    cout << "\n*** VENDA CANCELADA! ***\nPressione Enter para continuar...";
+                    cin.get();
+                    return;
+                }
+                if (confirm == 0)
+                    return;
+            }
+            else
+                return;
+        }
+        else if (option > 0 && option <= totalProducts)
+        {
+            int index = option - 1;
+            cout << "\nProduto selecionado: " << productArray[index].name << "\n";
+            cout << "Estoque disponivel: " << productArray[index].quantity << "\n";
+            cout << "Preco unitario: R$ " << productArray[index].unitPrice << "\n";
+            cout << "Quantidade a comprar: ";
+            float quantity = readFloat();
+            if (quantity <= 0 || quantity > productArray[index].quantity)
+            {
+                cout << "\nQuantidade invalida ou estoque insuficiente!\n";
+                cin.get();
+                continue;
+            }
+            CartItem item;
+            item.name = productArray[index].name;
+            item.quantity = quantity;
+            item.unitPrice = productArray[index].unitPrice;
+            item.subtotal = quantity * productArray[index].unitPrice;
+            cart.push_back(item);                     // adiciona ao carrinho
+            productArray[index].quantity -= quantity; // decrementa estoque
+            cout << "\n*** PRODUTO ADICIONADO AO CARRINHO! ***\n";
+            cin.get();
+        }
+    } while (true);
 }
 
+// Menu principal
 void mainMenu()
 {
     int option;
     do
     {
         system("cls");
-        cout << "\n+-----------------------------+\n";
-        cout << "|       Data: " << getCurrentDate() << "      |\n";
-        cout << "+-----------------------------+\n";
-        cout << "|        Menu Principal       |\n";
-        cout << "+-----------------------------+\n";
-        cout << "  [1] Cadastrar produto\n"; // LOGICA PARA VERIFICAR SE É NUMERO
+        cout << "\n+-------------------------------------------+\n";
+        cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << " |\n";
+        cout << "+-------------------------------------------+\n";
+        cout << "| Menu Principal                            |\n";
+        cout << "+-------------------------------------------+\n";
+        cout << "  [1] Cadastrar produto\n";
         cout << "  [2] Vender produto\n";
+        cout << "  [3] Listar produtos\n";
         cout << "  [0] Sair\n";
         cout << "Escolha uma opção: ";
-        option = lerNumero();
-
+        option = readInt();
         switch (option)
         {
         case 1:
             createProduct();
             break;
         case 2:
-            sellMenu();
+            sellProduct();
+            break;
+        case 3:
+            listProducts();
+            cout << "\nPressione Enter para continuar...";
+            cin.get();
             break;
         case 0:
             cout << "\nEncerrando sessão...\n";
             break;
         default:
             cout << "Opção inválida!\n";
-            cout << "Pressione Enter para continuar...";
-            cin.ignore();
             cin.get();
             break;
         }
     } while (option != 0);
 }
 
+// Função principal
 int main()
 {
-    system("chcp 65001");
-
-    readDataBase();
-
-    mainMenu();
-
+    system("chcp 65001"); // encoding UTF-8 no Windows
+    loadDatabase();       // carrega produtos do arquivo
+    mainMenu();           // inicia menu
     return 0;
 }

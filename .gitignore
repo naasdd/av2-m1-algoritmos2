@@ -1,2 +1,13 @@
-./database.txt
-./requisitos.txt
+# Arquivos de compilação
+*.exe
+*.out
+*.o
+
+# Diretórios de saída
+/output/
+
+# Configurações locais
+.vscode/
+
+# Logs
+*.log
