@@ -156,9 +156,12 @@ void saveDatabase()
     ofstream file("../database.txt", ios::trunc); // sobrescreve arquivo
     for (int i = 0; i < totalProducts; i++)
     {
-        file << productArray[i].name << ","
-             << productArray[i].quantity << ","
-             << productArray[i].unitPrice << endl;
+        if (productArray[i].quantity > 0)
+        {
+            file << productArray[i].name << ","
+                 << productArray[i].quantity << ","
+                 << productArray[i].unitPrice << endl;
+        }
     }
     file.close();
 }
@@ -489,6 +492,7 @@ void mainMenu()
             sellProduct();
             break;
         case 3:
+            loadDatabase();
             listProducts();
             cout << "\nPressione Enter para continuar...";
             cin.get();
