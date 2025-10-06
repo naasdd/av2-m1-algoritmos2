@@ -1,21 +1,19 @@
 #include <iostream>
+#include <fstream>
+#include <ctime>
+#include <vector>
 #include <cstdlib> // funções utilitárias (system)
-#include <ctime>   // usado para funções de data e hora
 #include <string>  // tipo string e operações
-#include <fstream> // leitura e escrita de arquivos
 #include <sstream> // manipulação de string streams (stringstream)
-#include <vector>  // contêiner vector
 #include <iomanip> // formatação de I/O (setw, setfill, setprecision, fixed)
 
 using namespace std;
 
-// Estrutura para datas
 struct Date
 {
     int day, month, year; // dia, mês e ano
 };
 
-// Estrutura de produto no estoque
 struct Product
 {
     string name;     // nome do produto
@@ -23,7 +21,6 @@ struct Product
     float unitPrice; // preço unitário
 };
 
-// Estrutura para itens no carrinho de compras
 struct CartItem
 {
     string name;     // nome do produto
@@ -39,11 +36,11 @@ vector<CartItem> cart;    // carrinho de compras (dinâmico com vector)
 // Pega a data atual formatada
 string getCurrentDate()
 {
-    time_t nowTime = time(0);      // pega tempo atual em segundos
+    time_t nowTime = time(0);      // pega tempo atual em segundos desde 1º de janeiro de 1970 (Epoch Time)
     tm *now = localtime(&nowTime); // converte para data local
     stringstream ss;
-    ss << setw(2) << setfill('0') << now->tm_mday << "/"      // setw(2) -> largura mínima de 2 caracteres
-       << setw(2) << setfill('0') << (now->tm_mon + 1) << "/" // setfill('0') -> preenche com zero à esquerda
+    ss << setw(2) << setfill('0') << now->tm_mday << "/"      // setw(2) -> largura mínima de 2 caracteres (tabulação)
+       << setw(2) << setfill('0') << (now->tm_mon + 1) << "/" // setfill('0') -> preenche os valores vazios
        << (now->tm_year + 1900);                              // ano atual
     return ss.str();
 }
@@ -53,7 +50,7 @@ string readString()
 {
     string input;
     getline(cin, input);
-    while (input.empty()) // impede entrada vazia
+    while (input.empty())
     {
         cout << "Entrada invalida! Digite um nome valido: ";
         getline(cin, input);
@@ -65,7 +62,7 @@ string readString()
 int readInt()
 {
     int number;
-    while (!(cin >> number)) // verifica se é inteiro
+    while (!(cin >> number))
     {
         cin.clear();            // limpa flags de erro
         cin.ignore(1000, '\n'); // descarta buffer
@@ -79,7 +76,7 @@ int readInt()
 float readFloat()
 {
     float number;
-    while (!(cin >> number)) // verifica se é decimal
+    while (!(cin >> number))
     {
         cin.clear();            // limpa flags de erro
         cin.ignore(1000, '\n'); // descarta buffer
@@ -93,21 +90,33 @@ float readFloat()
 Date stringToDate(string dateStr)
 {
     Date d;
-    stringstream ss(dateStr);
-    char delimiter;
+    stringstream ss(dateStr); // salva a data em formato de string
+    char delimiter;           // nesse caso é o caracter /
     ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
     return d;
 }
 
-// Converte Date em string
+// Converte Date em string (forma recomendada usando stringstream)
 string dateToString(Date d)
 {
-    stringstream ss;
-    ss << setw(2) << setfill('0') << d.day << "/"
-       << setw(2) << setfill('0') << d.month << "/"
+    stringstream ss;                                // cria um fluxo de texto para formatar a data
+    ss << setw(2) << setfill('0') << d.day << "/"   // setw(2) -> largura mínima de 2 caracteres
+       << setw(2) << setfill('0') << d.month << "/" // setfill('0') -> preenche com zeros à esquerda
        << d.year;
-    return ss.str();
+    return ss.str(); // Retorna a string final
 }
+
+// Observação: A versão com stringstream é mais preferível porque permite
+// formatação automática (zeros à esquerda, largura mínima) e é mais legível
+
+// Alternativa usando apenas string (funciona, mas menos elegante e flexível)
+/* string dateToString(Date d)
+{
+    string day = (d.day < 10 ? "0" : "") + to_string(d.day); // utilizando operador ternário
+    string month = (d.month < 10 ? "0" : "") + to_string(d.month);
+    string year = to_string(d.year);
+    return day + "/" + month + "/" + year;
+} */
 
 // Verifica ano bissexto
 bool isLeapYear(int year)
@@ -153,7 +162,7 @@ void showInstallmentDates(int numInstallments, float installmentValue)
 // Salva produtos no arquivo database.txt
 void saveDatabase()
 {
-    ofstream file("../database.txt", ios::trunc); // sobrescreve arquivo
+    ofstream file("../database.txt", ios::trunc); // abre o arquivo e apaga todo o conteúdo existente antes de escrever
     for (int i = 0; i < totalProducts; i++)
     {
         file << productArray[i].name << ","
@@ -190,7 +199,7 @@ Product updateDatabase(Product newProduct)
 // Cadastro de novo produto
 void createProduct()
 {
-    system("cls"); // limpa tela
+    system("cls");
     Product temp;
     cout << "\n+-------------------------------------------+\n";
     cout << "| Bem-vindo ao Bug & Buy | Data: " << getCurrentDate() << " |\n";
@@ -198,7 +207,7 @@ void createProduct()
     cout << "| Cadastrar Produto                         |\n";
     cout << "+-------------------------------------------+\n";
     cout << "Nome do produto: ";
-    temp.name = readString();
+    temp.name = readString(); // valida as entradas
     cout << "Quantidade: ";
     temp.quantity = readFloat();
     cout << "Valor de venda: ";
@@ -219,6 +228,8 @@ void loadDatabase()
     {
         if (line.empty())
             continue;
+
+        // separa os campos da linha
         string nameStr, quantityStr, priceStr;
         stringstream ss(line);
         getline(ss, nameStr, ',');
@@ -231,15 +242,15 @@ void loadDatabase()
         try // evita erro se conversão string -> float falhar
         {
             temp.name = nameStr;
-            temp.quantity = stof(quantityStr); // string -> float
+            temp.quantity = stof(quantityStr); // stof() -> converte string para float.
             temp.unitPrice = stof(priceStr);
         }
-        catch (const std::exception &) // captura exceção se conversão falhar
+        catch (const std::exception &) // captura erros na conversão de string para float
         {
             continue; // ignora linha inválida
         }
 
-        if (i < 20) // limite do array
+        if (i < 20)
         {
             productArray[i] = temp;
             i++;
@@ -265,9 +276,9 @@ void listProducts()
     }
     else
     {
-        for (int i = 0; i < totalProducts; i++)
+        for (int i = 0; i < totalProducts; i++) // preenche por linha
         {
-            cout << "| " << setw(2) << left << (i + 1) << " | " // setw(2) -> largura 2, left -> alinha à esquerda
+            cout << "| " << setw(2) << left << (i + 1) << " | " // setw(2) -> largura 2, left -> alinha à esquerda (igual nas outras utilizações)
                  << setw(25) << left << productArray[i].name << " | "
                  << setw(11) << fixed << setprecision(2) << productArray[i].quantity << " | R$ " // fixed + setprecision(2) -> sempre 2 casas decimais
                  << setw(12) << fixed << setprecision(2) << productArray[i].unitPrice << " |\n";
@@ -285,7 +296,7 @@ void showCart()
     cout << "| Produto                  | Qtd         | Preco Unit  | Subtotal|\n";
     cout << "+----------------------------------------------------------------+\n";
 
-    float total = 0.0f; // inicializa total do carrinho
+    float total = 0.0f; // inicializa o total do carrinho (f indica float, senão seria double)
     for (size_t i = 0; i < cart.size(); i++)
     {
         cout << "| " << setw(25) << left << cart[i].name << " | "                    // nome do produto, alinhado à esquerda
@@ -302,7 +313,7 @@ void showCart()
 // Calcula total do carrinho
 float getCartTotal()
 {
-    float total = 0.0f;
+    float total = 0.0f; // f indica float, senão seria double
     for (size_t i = 0; i < cart.size(); i++)
         total += cart[i].subtotal; // soma todos os subtotais
     return total;
@@ -381,12 +392,15 @@ void paymentMenu()
 }
 
 // Venda de produtos
+// Função para vender produtos
 void sellProduct()
 {
-    int option;
+    int option; // variável para armazenar a opção do usuário (ID do produto ou comando)
     do
     {
-        listProducts(); // mostra produtos
+        listProducts(); // exibe todos os produtos disponíveis
+
+        // Se não houver produtos cadastrados, exibe mensagem e retorna
         if (totalProducts == 0)
         {
             cout << "\nNao ha produtos cadastrados para vender!\n";
@@ -394,67 +408,83 @@ void sellProduct()
             cin.get();
             return;
         }
+
+        // Pede ao usuário para digitar o ID do produto ou 0 para finalizar
         cout << "\nDigite o ID do produto (ou 0 para finalizar): ";
         option = readInt();
+
+        // Se o usuário digitar 0, verifica se há produtos no carrinho
         if (option == 0)
         {
             if (!cart.empty())
             {
                 system("cls");
-                showCart(); // mostra carrinho
+                showCart();
+
+                // Menu de confirmação de venda
                 cout << "\n[1] Finalizar venda\n[2] Cancelar venda\n[0] Voltar\nEscolha uma opção: ";
                 int confirm = readInt();
-                if (confirm == 1)
+
+                if (confirm == 1) // finalizar venda
                 {
                     paymentMenu();
                     return;
                 }
-                if (confirm == 2)
+
+                if (confirm == 2) // cancelar venda
                 {
-                    // devolve produtos ao estoque
+                    // devolve produtos do carrinho ao estoque
                     for (size_t i = 0; i < cart.size(); i++)
                     {
                         for (int j = 0; j < totalProducts; j++)
                         {
                             if (productArray[j].name == cart[i].name)
                             {
-                                productArray[j].quantity += cart[i].quantity;
+                                productArray[j].quantity += cart[i].quantity; // retorna quantidade ao estoque
                                 break;
                             }
                         }
                     }
-                    cart.clear(); // limpa carrinho
-                    saveDatabase();
+                    cart.clear();   // limpa o carrinho
+                    saveDatabase(); // salva o estoque atualizado no arquivo
                     cout << "\n*** VENDA CANCELADA! ***\nPressione Enter para continuar...";
                     cin.get();
                     return;
                 }
-                if (confirm == 0)
+
+                if (confirm == 0) // voltar sem finalizar ou cancelar
                     return;
             }
             else
-                return;
+                return; // se o carrinho estiver vazio, apenas retorna
         }
+        // Se o usuário digitou um ID válido de produto
         else if (option > 0 && option <= totalProducts)
         {
-            int index = option - 1;
+            int index = option - 1; // ID para índice do array
             cout << "\nProduto selecionado: " << productArray[index].name << "\n";
             cout << "Estoque disponivel: " << productArray[index].quantity << "\n";
             cout << "Preco unitario: R$ " << productArray[index].unitPrice << "\n";
             cout << "Quantidade a comprar: ";
-            float quantity = readFloat();
+
+            float quantity = readFloat(); // lê a quantidade desejada
+
+            // quantidade é válida
             if (quantity <= 0 || quantity > productArray[index].quantity)
             {
                 cout << "\nQuantidade invalida ou estoque insuficiente!\n";
                 cin.get();
                 continue;
             }
+
+            // cria um item para o carrinho
             CartItem item;
             item.name = productArray[index].name;
             item.quantity = quantity;
             item.unitPrice = productArray[index].unitPrice;
             item.subtotal = quantity * productArray[index].unitPrice;
-            cart.push_back(item);                     // adiciona ao carrinho
+
+            cart.push_back(item);                     // adiciona o item ao final do carrinho com o push_back
             productArray[index].quantity -= quantity; // decrementa estoque
             cout << "\n*** PRODUTO ADICIONADO AO CARRINHO! ***\n";
             cin.get();
@@ -509,6 +539,6 @@ int main()
 {
     system("chcp 65001"); // encoding UTF-8 no Windows
     loadDatabase();       // carrega produtos do arquivo
-    mainMenu();           // inicia menu
+    mainMenu();
     return 0;
 }
