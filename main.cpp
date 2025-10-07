@@ -15,25 +15,25 @@ const float installmentInterest = 0.10f;
 
 struct Date
 {
-    int day, month, year; // dia, mês e ano
+    int day, month, year;
 };
 
 struct Product
 {
-    string name;     // nome do produto
-    float quantity;  // quantidade disponível
-    float unitPrice; // preço unitário
+    string name;
+    float quantity;
+    float unitPrice;
 };
 
 struct CartItem
 {
-    string name;     // nome do produto
-    float quantity;  // quantidade escolhida pelo cliente
-    float unitPrice; // preço unitário do produto
-    float subtotal;  // subtotal = quantity * unitPrice
+    string name;
+    float quantity;
+    float unitPrice;
+    float subtotal;
 };
 
-Product productArray[maxProducts]; // até 20 produtos cadastrados
+Product productArray[maxProducts]; // define a quantidade de produtos
 int totalProducts = 0;             // contador de produtos no array
 vector<CartItem> cart;             // carrinho de compras (dinâmico com vector)
 
@@ -227,9 +227,16 @@ void createProduct()
 void loadDatabase()
 {
     ifstream file("database.txt");
+    if (!file.is_open())
+    {
+        cout << "Aviso: arquivo database.txt não encontrado...\n";
+        return;
+    }
+
     string line;
     Product temp;
     int i = 0;
+
     while (getline(file, line)) // lê linha por linha
     {
         if (line.empty())
@@ -539,11 +546,10 @@ void mainMenu()
     } while (option != 0);
 }
 
-// Função principal
 int main()
 {
     system("chcp 65001"); // encoding UTF-8 no Windows
-    loadDatabase();       // carrega produtos do arquivo
+    loadDatabase();
     mainMenu();
     return 0;
 }
