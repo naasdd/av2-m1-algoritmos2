@@ -8,4 +8,3 @@ Leite 1L,80,4.9
 Manteiga 200g,20,9.8
 Sabão em Pó 1Kg,35,12.99
 Detergente 500ml,60,2.5
-a,32,32
