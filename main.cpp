@@ -36,13 +36,13 @@ vector<CartItem> cart;    // carrinho de compras (dinâmico com vector)
 // Pega a data atual formatada
 string getCurrentDate()
 {
-    time_t nowTime = time(0);      // pega tempo atual em segundos desde 1º de janeiro de 1970 (Epoch Time)
-    tm *now = localtime(&nowTime); // converte para data local
-    stringstream ss;
-    ss << setw(2) << setfill('0') << now->tm_mday << "/"      // setw(2) -> largura mínima de 2 caracteres (tabulação)
-       << setw(2) << setfill('0') << (now->tm_mon + 1) << "/" // setfill('0') -> preenche os valores vazios
-       << (now->tm_year + 1900);                              // ano atual
-    return ss.str();
+    time_t nowTime = time(0);                                   // pega tempo atual em segundos desde 1º de janeiro de 1970 (Epoch Time)
+    tm *now = localtime(&nowTime);                              // converte para data local
+    stringstream text;                                          // stringstream serve para "montar" um texto aos poucos, como se fosse cout
+    text << setw(2) << setfill('0') << now->tm_mday << "/"      // setw(2) define largura mínima de 2 caracteres (ex: 7 -> " 7")
+         << setw(2) << setfill('0') << (now->tm_mon + 1) << "/" // setfill('0') preenche com zero à esquerda se faltar espaço (ex: 7 -> "07")
+         << (now->tm_year + 1900);                              // ano atual
+    return text.str();
 }
 
 // Lê string com validação
@@ -89,21 +89,23 @@ float readFloat()
 // Converte string em Date (dd/mm/yyyy)
 Date stringToDate(string dateStr)
 {
-    Date d;
-    stringstream ss(dateStr); // salva a data em formato de string
-    char delimiter;           // nesse caso é o caracter /
-    ss >> d.day >> delimiter >> d.month >> delimiter >> d.year;
-    return d;
+    Date date;
+    stringstream text(dateStr); // stringstream serve para "montar" um texto aos poucos, como se fosse cout
+    char delimiter;             // delimiter nesse caso é o caracter /
+    text >> date.day >> delimiter >> date.month >> delimiter >> date.year;
+    return date;
 }
 
-// Converte Date em string (forma recomendada usando stringstream)
-string dateToString(Date d)
+// Converte uma data em string (ex: 05/10/2025)
+string dateToString(Date date)
 {
-    stringstream ss;                                // cria um fluxo de texto para formatar a data
-    ss << setw(2) << setfill('0') << d.day << "/"   // setw(2) -> largura mínima de 2 caracteres
-       << setw(2) << setfill('0') << d.month << "/" // setfill('0') -> preenche com zeros à esquerda
-       << d.year;
-    return ss.str(); // Retorna a string final
+    stringstream text; // stringstream serve para "montar" um texto aos poucos, como se fosse cout
+
+    text << setw(2) << setfill('0') << date.day << "/"   // setw(2) define largura mínima de 2 caracteres (ex: 7 -> " 7")
+         << setw(2) << setfill('0') << date.month << "/" // setfill('0') preenche com zero à esquerda se faltar espaço (ex: 7 -> "07")
+         << date.year;                                   // ano normal
+
+    return text.str(); // transforma o que foi montado em uma string normal
 }
 
 // Observação: A versão com stringstream é mais preferível porque permite
@@ -125,23 +127,23 @@ bool isLeapYear(int year)
 }
 
 // Adiciona dias a uma data
-Date addDays(Date d, int days)
+Date addDays(Date date, int days)
 {
     int daysInMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    daysInMonth[2] = isLeapYear(d.year) ? 29 : 28; // ajusta fevereiro se for bissexto
-    d.day += days;
-    while (d.day > daysInMonth[d.month]) // rola para próximo mês
+    daysInMonth[2] = isLeapYear(date.year) ? 29 : 28; // ajusta fevereiro se for bissexto
+    date.day += days;
+    while (date.day > daysInMonth[date.month]) // rola para próximo mês
     {
-        d.day -= daysInMonth[d.month];
-        d.month++;
-        if (d.month > 12) // rola para próximo ano
+        date.day -= daysInMonth[date.month];
+        date.month++;
+        if (date.month > 12) // rola para próximo ano
         {
-            d.month = 1;
-            d.year++;
-            daysInMonth[2] = isLeapYear(d.year) ? 29 : 28; // ajusta fevereiro
+            date.month = 1;
+            date.year++;
+            daysInMonth[2] = isLeapYear(date.year) ? 29 : 28; // ajusta fevereiro
         }
     }
-    return d;
+    return date;
 }
 
 // Mostra datas das parcelas
@@ -153,7 +155,7 @@ void showInstallmentDates(int numInstallments, float installmentValue)
     for (int i = 1; i <= numInstallments; i++)
     {
         Date installmentDate = addDays(currentDate, 30 * i);           // cada parcela +30 dias
-        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2) // fixed -> força ponto fixo (não notação científica)
+        cout << "Parcela " << i << ": R$ " << fixed << setprecision(2) // fixed  força o número a ser mostrado em ponto fixo (1234.5 será mostrado como 1234.50 e não 1.2345e+03)
              << installmentValue << " - " << dateToString(installmentDate) << "\n";
     }
     cout << "+-------------------------------------------+\n";
@@ -231,10 +233,10 @@ void loadDatabase()
 
         // separa os campos da linha
         string nameStr, quantityStr, priceStr;
-        stringstream ss(line);
-        getline(ss, nameStr, ',');
-        getline(ss, quantityStr, ',');
-        getline(ss, priceStr, ',');
+        stringstream text(line); // stringstream serve para "montar" um texto aos poucos, como se fosse cout
+        getline(text, nameStr, ',');
+        getline(text, quantityStr, ',');
+        getline(text, priceStr, ',');
 
         if (quantityStr.empty() || priceStr.empty())
             continue;
@@ -242,10 +244,10 @@ void loadDatabase()
         try // evita erro se conversão string -> float falhar
         {
             temp.name = nameStr;
-            temp.quantity = stof(quantityStr); // stof() -> converte string para float.
+            temp.quantity = stof(quantityStr); // stof converte string para float.
             temp.unitPrice = stof(priceStr);
         }
-        catch (const std::exception &) // captura erros na conversão de string para float
+        catch (const std::exception &) // captura erros de conversão, sem copiar nem alterar o erro
         {
             continue; // ignora linha inválida
         }
@@ -278,10 +280,10 @@ void listProducts()
     {
         for (int i = 0; i < totalProducts; i++) // preenche por linha
         {
-            cout << "| " << setw(2) << left << (i + 1) << " | " // setw(2) -> largura 2, left -> alinha à esquerda (igual nas outras utilizações)
-                 << setw(25) << left << productArray[i].name << " | "
-                 << setw(11) << fixed << setprecision(2) << productArray[i].quantity << " | R$ " // fixed + setprecision(2) -> sempre 2 casas decimais
-                 << setw(12) << fixed << setprecision(2) << productArray[i].unitPrice << " |\n";
+            cout << "| " << setw(2) << left << (i + 1) << " | "                                  // setw define largura mínima de 2 caracteres (7 vira " 7")
+                 << setw(25) << left << productArray[i].name << " | "                            // left alinha o valor à esquerda no espaço definido por setw ("7 ")
+                 << setw(11) << fixed << setprecision(2) << productArray[i].quantity << " | R$ " // fixed mostra em notacao normal, ao inves de cientifica (5 vira 5.00)
+                 << setw(12) << fixed << setprecision(2) << productArray[i].unitPrice << " |\n"; // setprecision mostra 2 casas decimais (123.456 vira 123.46)
         }
     }
     cout << "+----------------------------------------------------------------+\n";
@@ -296,11 +298,13 @@ void showCart()
     cout << "| Produto                  | Qtd         | Preco Unit  | Subtotal|\n";
     cout << "+----------------------------------------------------------------+\n";
 
-    float total = 0.0f; // inicializa o total do carrinho (f indica float, senão seria double)
+    float total = 0.0f; // f indica float, senão seria double
     for (size_t i = 0; i < cart.size(); i++)
     {
-        cout << "| " << setw(25) << left << cart[i].name << " | "                    // nome do produto, alinhado à esquerda
-             << setw(10) << fixed << setprecision(2) << cart[i].quantity << " | R$ " // quantidade com 2 casas decimais
+        cout << "| " << setw(25) << left << cart[i].name << " | "                    // setw define largura mínima de 2 caracteres (7 vira " 7")
+                                                                                     // e left alinha o valor à esquerda no espaço definido por setw ("7 ")
+             << setw(10) << fixed << setprecision(2) << cart[i].quantity << " | R$ " // fixed mostra em notacao normal, ao inves de cientifica (5 vira 5.00)
+                                                                                     // setprecision mostra 2 casas decimais (123.456 vira 123.46)
              << setw(9) << cart[i].unitPrice << " | R$ "
              << setw(9) << cart[i].subtotal << " |\n"; // subtotal formatado
         total += cart[i].subtotal;                     // acumula total
@@ -348,7 +352,7 @@ void paymentMenu()
             cout << "Desconto (5%): R$ " << (totalPurchase * 0.05f) << "\n";
             cout << "Total a pagar: R$ " << (totalPurchase * 0.95f) << "\n";
             showInstallmentDates(1, totalPurchase * 0.95f); // 1 parcela
-            cart.clear();                                   // limpa o carrinho (vector::clear)
+            cart.clear();                                   // limpa o carrinho
             saveDatabase();                                 // atualiza estoque
             cout << "\nVenda finalizada!\n";
             cin.get(); // pausa para usuário ver o resultado
@@ -392,15 +396,13 @@ void paymentMenu()
 }
 
 // Venda de produtos
-// Função para vender produtos
 void sellProduct()
 {
-    int option; // variável para armazenar a opção do usuário (ID do produto ou comando)
+    int option;
     do
     {
-        listProducts(); // exibe todos os produtos disponíveis
+        listProducts();
 
-        // Se não houver produtos cadastrados, exibe mensagem e retorna
         if (totalProducts == 0)
         {
             cout << "\nNao ha produtos cadastrados para vender!\n";
@@ -409,11 +411,10 @@ void sellProduct()
             return;
         }
 
-        // Pede ao usuário para digitar o ID do produto ou 0 para finalizar
         cout << "\nDigite o ID do produto (ou 0 para finalizar): ";
         option = readInt();
 
-        // Se o usuário digitar 0, verifica se há produtos no carrinho
+        // verifica se há produtos no carrinho
         if (option == 0)
         {
             if (!cart.empty())
