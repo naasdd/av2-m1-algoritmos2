@@ -9,7 +9,6 @@
 
 using namespace std;
 
-const int maxProducts = 20;
 const float cashDiscount = 0.05f;
 const float installmentInterest = 0.10f;
 
@@ -33,9 +32,8 @@ struct CartItem
     float subtotal;
 };
 
-Product productArray[maxProducts]; // define a quantidade de produtos
-int totalProducts = 0;             // contador de produtos no array
-vector<CartItem> cart;             // carrinho de compras (dinâmico com vector)
+vector<Product> productArray; // produtos (dinâmico com vector)
+vector<CartItem> cart;        // carrinho de compras (dinâmico com vector)
 
 // Pega a data atual formatada
 string getCurrentDate()
@@ -169,7 +167,7 @@ void showInstallmentDates(int numInstallments, float installmentValue)
 void saveDatabase()
 {
     ofstream file("database.txt", ios::trunc); // abre o arquivo e apaga todo o conteúdo existente antes de escrever
-    for (int i = 0; i < totalProducts; i++)
+    for (size_t i = 0; i < productArray.size(); i++) // size() retorna o tamanho atual do vector
     {
         if (productArray[i].quantity > 0)
         {
@@ -185,7 +183,7 @@ void saveDatabase()
 Product updateDatabase(Product newProduct)
 {
     bool found = false;
-    for (int i = 0; i < totalProducts; i++)
+    for (size_t i = 0; i < productArray.size(); i++) // size() retorna o tamanho atual do vector
     {
         if (productArray[i].name == newProduct.name) // produto já existe
         {
@@ -196,10 +194,9 @@ Product updateDatabase(Product newProduct)
             break;
         }
     }
-    if (!found && totalProducts < maxProducts) // novo produto
+    if (!found)
     {
-        productArray[totalProducts] = newProduct;
-        totalProducts++;
+        productArray.push_back(newProduct); // adiciona o produto ao final do vector
     }
     saveDatabase();
     return newProduct;
@@ -221,7 +218,7 @@ void createProduct()
     temp.quantity = readFloat();
     cout << "Valor de venda: ";
     temp.unitPrice = readFloat();
-    temp = updateDatabase(temp); // salva no array + arquivo
+    temp = updateDatabase(temp); // salva no vector + arquivo
     cout << "\n*** PRODUTO CADASTRADO COM SUCESSO! ***\n";
     cin.get(); // pausa até o usuário pressionar Enter
 }
@@ -238,7 +235,8 @@ void loadDatabase()
 
     string line;
     Product temp;
-    int i = 0;
+
+    productArray.clear(); // limpa o vector antes de carregar novos dados
 
     while (getline(file, line)) // lê linha por linha
     {
@@ -266,13 +264,8 @@ void loadDatabase()
             continue; // ignora linha inválida
         }
 
-        if (i < maxProducts)
-        {
-            productArray[i] = temp;
-            i++;
-        }
+        productArray.push_back(temp); // adiciona o produto ao final do vector
     }
-    totalProducts = i;
     file.close();
 }
 
@@ -286,13 +279,13 @@ void listProducts()
     cout << "| ID | Produto                  | Quantidade   | Preco Unit.     |\n";
     cout << "+----------------------------------------------------------------+\n";
 
-    if (totalProducts == 0)
+    if (productArray.size() == 0) // size() retorna o tamanho atual do vector
     {
         cout << "|                 Nenhum produto cadastrado!                     |\n";
     }
     else
     {
-        for (int i = 0; i < totalProducts; i++) // preenche por linha
+        for (size_t i = 0; i < productArray.size(); i++) // preenche por linha
         {
             cout << "| " << setw(2) << left << (i + 1) << " | "                                  // setw define largura mínima de 2 caracteres (7 vira " 7")
                  << setw(25) << left << productArray[i].name << " | "                            // left alinha o valor à esquerda no espaço definido por setw ("7 ")
@@ -417,7 +410,7 @@ void sellProduct()
     {
         listProducts();
 
-        if (totalProducts == 0)
+        if (productArray.size() == 0) // size() retorna o tamanho atual do vector
         {
             cout << "\nNao ha produtos cadastrados para vender!\n";
             cout << "Pressione Enter para voltar...";
@@ -451,7 +444,7 @@ void sellProduct()
                     // devolve produtos do carrinho ao estoque
                     for (size_t i = 0; i < cart.size(); i++)
                     {
-                        for (int j = 0; j < totalProducts; j++)
+                        for (size_t j = 0; j < productArray.size(); j++)
                         {
                             if (productArray[j].name == cart[i].name)
                             {
@@ -474,9 +467,9 @@ void sellProduct()
                 return; // se o carrinho estiver vazio, apenas retorna
         }
         // Se o usuário digitou um ID válido de produto
-        else if (option > 0 && option <= totalProducts)
+        else if (option > 0 && option <= (int)productArray.size()) // converte size_t para int na comparação
         {
-            int index = option - 1; // ID para índice do array
+            int index = option - 1; // ID para índice do vector
             cout << "\nProduto selecionado: " << productArray[index].name << "\n";
             cout << "Estoque disponivel: " << productArray[index].quantity << "\n";
             cout << "Preco unitario: R$ " << productArray[index].unitPrice << "\n";
