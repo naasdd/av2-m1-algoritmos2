@@ -9,6 +9,10 @@
 
 using namespace std;
 
+const int maxProducts = 20;
+const float cashDiscount = 0.05f;
+const float installmentInterest = 0.10f;
+
 struct Date
 {
     int day, month, year; // dia, mês e ano
@@ -29,9 +33,9 @@ struct CartItem
     float subtotal;  // subtotal = quantity * unitPrice
 };
 
-Product productArray[20]; // até 20 produtos cadastrados
-int totalProducts = 0;    // contador de produtos no array
-vector<CartItem> cart;    // carrinho de compras (dinâmico com vector)
+Product productArray[maxProducts]; // até 20 produtos cadastrados
+int totalProducts = 0;             // contador de produtos no array
+vector<CartItem> cart;             // carrinho de compras (dinâmico com vector)
 
 // Pega a data atual formatada
 string getCurrentDate()
@@ -164,7 +168,7 @@ void showInstallmentDates(int numInstallments, float installmentValue)
 // Salva produtos no arquivo database.txt
 void saveDatabase()
 {
-    ofstream file("../database.txt", ios::trunc); // abre o arquivo e apaga todo o conteúdo existente antes de escrever
+    ofstream file("database.txt", ios::trunc); // abre o arquivo e apaga todo o conteúdo existente antes de escrever
     for (int i = 0; i < totalProducts; i++)
     {
         file << productArray[i].name << ","
@@ -189,7 +193,7 @@ Product updateDatabase(Product newProduct)
             break;
         }
     }
-    if (!found && totalProducts < 20) // novo produto
+    if (!found && totalProducts < maxProducts) // novo produto
     {
         productArray[totalProducts] = newProduct;
         totalProducts++;
@@ -222,7 +226,7 @@ void createProduct()
 // Lê o arquivo database.txt e carrega produtos
 void loadDatabase()
 {
-    ifstream file("../database.txt");
+    ifstream file("database.txt");
     string line;
     Product temp;
     int i = 0;
@@ -252,7 +256,7 @@ void loadDatabase()
             continue; // ignora linha inválida
         }
 
-        if (i < 20)
+        if (i < maxProducts)
         {
             productArray[i] = temp;
             i++;
@@ -338,9 +342,9 @@ void paymentMenu()
         cout << "+-------------------------------------------+\n";
         cout << "\nTotal da compra: R$ " << fixed << setprecision(2) << totalPurchase << "\n";
         cout << "+-------------------------------------------+\n";
-        cout << "  [1] À vista (5% desconto)\n";
+        cout << "  [1] À vista (" << (cashDiscount * 100) << "% desconto)\n";
         cout << "  [2] Até 3x sem juros\n";
-        cout << "  [3] Até 12x com 10% juros\n";
+        cout << "  [3] Até 12x com " << (installmentInterest * 100) << "% juros\n";
         cout << "  [0] Voltar\n";
         cout << "Escolha uma opção: ";
         option = readInt();
@@ -349,11 +353,11 @@ void paymentMenu()
         case 1:
             system("cls");
             cout << "\nTotal: R$ " << totalPurchase << "\n";
-            cout << "Desconto (5%): R$ " << (totalPurchase * 0.05f) << "\n";
-            cout << "Total a pagar: R$ " << (totalPurchase * 0.95f) << "\n";
-            showInstallmentDates(1, totalPurchase * 0.95f); // 1 parcela
-            cart.clear();                                   // limpa o carrinho
-            saveDatabase();                                 // atualiza estoque
+            cout << "Desconto (" << (cashDiscount * 100) << "%): R$ " << (totalPurchase * cashDiscount) << "\n";
+            cout << "Total a pagar: R$ " << (totalPurchase * (1 - cashDiscount)) << "\n";
+            showInstallmentDates(1, totalPurchase * (1 - cashDiscount)); // 1 parcela
+            cart.clear();                                                // limpa o carrinho
+            saveDatabase();                                              // atualiza estoque
             cout << "\nVenda finalizada!\n";
             cin.get(); // pausa para usuário ver o resultado
             return;
@@ -373,7 +377,7 @@ void paymentMenu()
         }
         case 3:
         {
-            float totalWithInterest = totalPurchase * 1.10f; // 10% juros
+            float totalWithInterest = totalPurchase * (1 + installmentInterest); // porcentagem de juros
             cout << "Total com juros: R$ " << totalWithInterest << "\n";
             cout << "Escolha o numero de parcelas (4-12): ";
             int installments = readInt();

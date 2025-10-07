@@ -3,11 +3,5 @@
 *.out
 *.o
 
-# Diretórios de saída
-/output/
-
 # Configurações locais
 .vscode/
-
-# Logs
-*.log
