@@ -1,10 +1,10 @@
 Arroz 5Kg,48,25.9
-Feijão 1Kg,40,8.5
-Macarrão 500g,60,4.2
-Óleo de Soja 900ml,30,6.99
-Açúcar 1Kg,45,5.7
-Café 500g,25,17.5
+Feijao 1Kg,40,8.5
+Macarrao 500g,60,4.2
+Oleo de Soja 900ml,30,6.99
+Acucar 1Kg,45,5.7
+Cafe 500g,25,17.5
 Leite 1L,80,4.9
 Manteiga 200g,20,9.8
-Sabão em Pó 1Kg,35,12.99
+Sabao em Po 1Kg,35,12.99
 Detergente 500ml,60,2.5
